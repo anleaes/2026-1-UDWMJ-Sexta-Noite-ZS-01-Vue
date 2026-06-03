@@ -16,6 +16,12 @@ const error = ref('')
 
 async function entrar() {
   error.value = ''
+
+  if (!email.value.trim() || !senha.value.trim()) {
+    error.value = 'Preencha e-mail e senha.'
+    return
+  }
+
   loading.value = true
 
   try {
@@ -27,7 +33,8 @@ async function entrar() {
       router.push('/cliente/listar-filmes')
     }
   } catch (err) {
-    error.value = 'Não foi possível entrar. Verifique e-mail e senha.'
+    error.value =
+      err instanceof Error ? err.message : 'E-mail ou senha incorretos.'
   } finally {
     loading.value = false
   }
@@ -65,7 +72,7 @@ async function entrar() {
       </form>
 
       <RouterLink to="/register">
-        Ainda não tem conta? Cadastre-se
+        Ainda nao tem conta? Cadastre-se
       </RouterLink>
     </AppCard>
   </main>

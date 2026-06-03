@@ -1,8 +1,21 @@
 import { defineStore } from 'pinia'
 import { api } from '@/services/api'
-import type { AuthUser } from '@/types'
+import type { AuthUser, UserTipo } from '@/types'
 
 const STORAGE_KEY = 'cinemaapp_user'
+
+type LoginResponse = {
+  success?: boolean
+  detail?: string
+  token?: string
+  tipo?: string
+  usuario_tipo?: string
+  usuario?: {
+    tipo?: string
+    nome?: string
+    email?: string
+  }
+}
 
 function getStoredUser(): AuthUser {
   const value = localStorage.getItem(STORAGE_KEY)
@@ -16,6 +29,12 @@ function getStoredUser(): AuthUser {
   } catch {
     return { tipo: 'guest' }
   }
+}
+
+function normalizeTipo(value: unknown): UserTipo {
+  const tipo = String(value ?? 'cliente').toLowerCase()
+
+  return tipo === 'administrador' ? 'administrador' : 'cliente'
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -36,16 +55,19 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(email: string, senha: string) {
-      const data = await api.login(email, senha)
+      const data = (await api.login(email, senha)) as LoginResponse
 
-      if (!data.success) {
-        throw new Error('Login não autorizado')
+      if (!data?.success) {
+        throw new Error(data?.detail || 'Login nao autorizado')
       }
 
+      const userData = data.usuario ?? {}
+      const tipo = normalizeTipo(userData.tipo ?? data.usuario_tipo ?? data.tipo)
+
       this.setUser({
-        tipo: data.usuario.tipo,
-        nome: data.usuario.nome,
-        email: data.usuario.email,
+        tipo,
+        nome: userData.nome,
+        email: userData.email ?? email.trim(),
         token: data.token,
       })
 
