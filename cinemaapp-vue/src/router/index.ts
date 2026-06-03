@@ -31,6 +31,36 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminHomeView.vue'),
       meta: { requiresAuth: true, role: 'administrador' },
     },
+    {
+      path: '/admin/listar-filmes',
+      name: 'admin-listar-filmes',
+      component: () => import('@/views/admin/AdminListarFilmesView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
+    {
+      path: '/admin/cadastrar-filme',
+      name: 'admin-cadastrar-filme',
+      component: () => import('@/views/admin/AdminCadastrarFilmeView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
+    {
+      path: '/admin/editar-filme',
+      name: 'admin-editar-filme',
+      component: () => import('@/views/admin/AdminEditarFilmeView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
+    {
+      path: '/admin/listar-generos',
+      name: 'admin-generos',
+      component: () => import('@/views/admin/AdminGenerosView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
+    {
+      path: '/admin/listar-assentos',
+      name: 'admin-assentos',
+      component: () => import('@/views/admin/AdminAssentosView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
   ],
 })
 
