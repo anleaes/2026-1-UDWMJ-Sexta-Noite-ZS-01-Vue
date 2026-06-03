@@ -84,41 +84,45 @@ onMounted(carregarFilmes)
         {{ error }}
       </div>
 
-      <div v-else class="grid">
-        <AppCard
-          v-for="filme in filmesFiltrados"
-          :key="filme.id"
-        >
-          <h2>{{ filme.titulo }}</h2>
-          <p>Classificação: {{ filme.classificacao }}</p>
-          <p>Duração: {{ filme.duracao }} min</p>
-          <p>Gênero ID: {{ filme.genero }}</p>
+        <div v-else-if="filmesFiltrados.length === 0" class="empty">
+        Nenhum filme encontrado.
+        </div>
 
-          <div class="actions">
+        <div v-else class="grid">
+        <AppCard
+            v-for="filme in filmesFiltrados"
+            :key="filme.id"
+        >
+            <h2>{{ filme.titulo }}</h2>
+            <p>Classificação: {{ filme.classificacao }}</p>
+            <p>Duração: {{ filme.duracao }} min</p>
+            <p>Gênero ID: {{ filme.genero }}</p>
+
+            <div class="actions">
             <RouterLink
-              :to="{
+                :to="{
                 path: '/admin/editar-filme',
                 query: {
-                  id: filme.id,
-                  titulo: filme.titulo,
-                  duracao: filme.duracao,
-                  classificacao: filme.classificacao,
-                  genero: filme.genero,
+                    id: filme.id,
+                    titulo: filme.titulo,
+                    duracao: filme.duracao,
+                    classificacao: filme.classificacao,
+                    genero: filme.genero,
                 },
-              }"
+                }"
             >
-              <AppButton variant="secondary">Editar</AppButton>
+                <AppButton variant="secondary">Editar</AppButton>
             </RouterLink>
 
             <AppButton
-              variant="danger"
-              @click="excluirFilme(filme.id)"
+                variant="danger"
+                @click="excluirFilme(filme.id)"
             >
-              Excluir
+                Excluir
             </AppButton>
-          </div>
+            </div>
         </AppCard>
-      </div>
+        </div>
     </section>
   </AppLayout>
 </template>
@@ -149,5 +153,13 @@ h2 {
 
 p {
   color: var(--color-muted-light);
+}
+
+.empty {
+  color: var(--color-muted-light);
+  border: 1px dashed var(--color-border-soft);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
 }
 </style>
