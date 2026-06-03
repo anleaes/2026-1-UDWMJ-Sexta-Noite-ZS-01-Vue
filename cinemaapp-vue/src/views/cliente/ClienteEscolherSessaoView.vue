@@ -13,6 +13,10 @@ const route = useRoute()
 const filmeId = Number(route.query.filmeId)
 const filmeTitulo = String(route.query.filmeTitulo || 'Filme')
 
+const parametrosInvalidos = computed(() => {
+  return !filmeId || !filmeTitulo
+})
+
 const sessoes = ref<Sessao[]>([])
 const loading = ref(false)
 const error = ref('')
@@ -52,7 +56,11 @@ onMounted(carregarSessoes)
       <h1 class="page-title">Escolher Sessão</h1>
       <p class="page-subtitle">{{ filmeTitulo }}</p>
 
-      <LoadingSpinner v-if="loading" />
+      <div v-if="parametrosInvalidos" class="error-message">
+        Filme inválido. Volte e escolha um filme novamente.
+      </div>
+
+     <LoadingSpinner v-else-if="loading" />
 
       <div v-else-if="error" class="error-message">
         {{ error }}
