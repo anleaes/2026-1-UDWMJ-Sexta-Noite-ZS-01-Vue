@@ -126,7 +126,9 @@ onMounted(carregarGeneros)
       </AppCard>
 
       <LoadingSpinner v-if="loading" />
-
+        <div v-else-if="generos.length === 0" class="empty">
+        Nenhum gênero cadastrado.
+        </div>
       <div v-else class="grid">
         <AppCard
           v-for="genero in generos"
@@ -162,5 +164,12 @@ h2 {
 
 p {
   color: var(--color-muted-light);
+}
+.empty {
+  color: var(--color-muted-light);
+  border: 1px dashed var(--color-border-soft);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
 }
 </style>
