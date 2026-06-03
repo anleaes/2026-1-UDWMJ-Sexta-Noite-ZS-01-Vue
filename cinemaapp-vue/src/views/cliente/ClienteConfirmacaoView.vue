@@ -1,3 +1,4 @@
+```vue
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -18,48 +19,63 @@ const assentos = computed(() => {
 
   return assentosTexto.split(',').filter(Boolean)
 })
+
+const pedidoInvalido = computed(() => {
+  return !pedidoId
+})
 </script>
 
 <template>
   <AppLayout>
     <section class="page confirmation-page">
       <AppCard class="confirmation-card">
-        <div class="icon">✅</div>
+        <div v-if="pedidoInvalido">
+          <h1>Pedido não encontrado</h1>
+          <p>Volte para a lista de filmes e realize uma nova compra.</p>
 
-        <h1>Compra confirmada!</h1>
-
-        <p>
-          Seu pedido foi criado com sucesso.
-        </p>
-
-        <div class="info">
-          <strong>Filme:</strong>
-          <span>{{ filmeTitulo }}</span>
-        </div>
-
-        <div class="info">
-          <strong>Número do pedido:</strong>
-          <span>{{ pedidoId }}</span>
-        </div>
-
-        <div class="badges">
-          <span
-            v-for="assento in assentos"
-            :key="assento"
-            class="badge"
-          >
-            Assento {{ assento }}
-          </span>
-        </div>
-
-        <div class="actions">
           <RouterLink to="/cliente/listar-filmes">
-            <AppButton>Ver outros filmes</AppButton>
+            <AppButton>Ver filmes</AppButton>
           </RouterLink>
+        </div>
 
-          <RouterLink to="/">
-            <AppButton variant="secondary">Ir para início</AppButton>
-          </RouterLink>
+        <div v-else>
+          <div class="icon">✅</div>
+
+          <h1>Compra confirmada!</h1>
+
+          <p>
+            Seu pedido foi criado com sucesso.
+          </p>
+
+          <div class="info">
+            <strong>Filme:</strong>
+            <span>{{ filmeTitulo }}</span>
+          </div>
+
+          <div class="info">
+            <strong>Número do pedido:</strong>
+            <span>{{ pedidoId }}</span>
+          </div>
+
+          <div class="badges">
+            <span
+              v-for="assento in assentos"
+              :key="assento"
+              class="badge"
+            >
+              Assento {{ assento }}
+            </span>
+          </div>
+
+          <div class="actions">
+            <RouterLink to="/cliente/listar-filmes">
+              <AppButton>Ver outros filmes</AppButton>
+            </RouterLink>
+
+            <RouterLink to="/">
+              <AppButton variant="secondary">Ir para início</AppButton>
+            </RouterLink>
+          </div>
         </div>
       </AppCard>
     </section>
@@ -122,3 +138,5 @@ p {
   justify-content: center;
 }
 </style>
+
+```
