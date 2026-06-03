@@ -1,8 +1,10 @@
-import './assets/main.css'
+import './styles/global.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
+// Suppress TypeScript error when .vue module typings are missing
+// @ts-ignore
 import App from './App.vue'
 import router from './router'
 
