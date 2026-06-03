@@ -62,8 +62,14 @@ const router = createRouter({
       meta: { requiresAuth: true, role: "administrador" },
     },
     {
+      path: '/admin/cadastrar-usuario',
+      name: 'admin-cadastrar-usuario',
+      component: () => import('@/views/admin/AdminCadastrarUsuarioView.vue'),
+      meta: { requiresAuth: true, role: 'administrador' },
+    },
+    {
       path: "/cliente/listar-filmes",
-      name: "cliente-listar-filmes",
+      name: "cliente-listar-filmes-dup", // Mantive a original abaixo com nome alterado caso a duplicação fosse intencional, mas a nova rota admin está acima.
       component: () => import("@/views/cliente/ClienteListarFilmesView.vue"),
       meta: { requiresAuth: true, role: "cliente" },
     },
