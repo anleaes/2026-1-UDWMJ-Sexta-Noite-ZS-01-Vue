@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import AppButton from '@/components/AppButton.vue'
 import AppCard from '@/components/AppCard.vue'
@@ -67,7 +67,15 @@ async function mudarStatus(assento: Assento) {
     alert('Não foi possível mudar o status do assento.')
   }
 }
+const assentosOrdenados = computed(() => {
+  return [...assentos.value].sort((a, b) => {
+    if (a.fila === b.fila) {
+      return a.numero - b.numero
+    }
 
+    return a.fila.localeCompare(b.fila)
+  })
+})
 onMounted(carregarAssentos)
 </script>
 
@@ -99,7 +107,7 @@ onMounted(carregarAssentos)
 
       <div v-else class="grid grid-2">
         <AppCard
-          v-for="assento in assentos"
+          v-for="assento in assentosOrdenados"
           :key="assento.id"
         >
           <h2>Fila {{ assento.fila }} - Assento {{ assento.numero }}</h2>
