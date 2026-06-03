@@ -113,11 +113,11 @@ onMounted(carregarAssentos)
 
       <LoadingSpinner v-if="loading" />
 
-      <div v-else-if="error" class="error-message">
+      <div v-if="error" class="error-message">
         {{ error }}
       </div>
 
-      <div v-else>
+      <div v-if="!loading">
         <AppCard class="ticket-card">
           <label class="field">
             <span>Tipo de ingresso</span>
