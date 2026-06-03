@@ -16,7 +16,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(text || 'Erro na requisição')
+    throw new Error(text || 'Erro na requisicao')
   }
 
   if (response.status === 204) {
@@ -55,7 +55,7 @@ export const api = {
 
   async login(email: string, senha: string) {
     const body = new URLSearchParams()
-    body.append('email', email)
+    body.append('email', email.trim())
     body.append('senha', senha)
 
     const response = await fetch(`${API_URL}/usuarios/login/`, {
@@ -63,15 +63,18 @@ export const api = {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
       },
       body,
     })
 
+    const data = await response.json().catch(() => null)
+
     if (!response.ok) {
-      throw new Error('E-mail ou senha inválidos')
+      throw new Error(data?.detail || 'E-mail ou senha invalidos')
     }
 
-    return response.json()
+    return data
   },
 
   async logout() {
