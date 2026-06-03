@@ -36,7 +36,10 @@ async function salvar() {
     error.value = 'Filme inválido.'
     return
   }
-
+  if (!titulo.value || !duracao.value || !classificacao.value) {
+    error.value = 'Preencha título, duração e classificação.'
+    return
+  }
   loading.value = true
 
   try {
