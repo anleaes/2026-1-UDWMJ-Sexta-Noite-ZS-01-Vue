@@ -1,36 +1,83 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import AppButton from '@/components/AppButton.vue'
+
+const auth = useAuthStore()
+
+const destinoPrincipal = computed(() => {
+  if (auth.user.tipo === 'administrador') {
+    return '/admin'
+  }
+
+  if (auth.user.tipo === 'cliente') {
+    return '/cliente/listar-filmes'
+  }
+
+  return '/login'
+})
+</script>
+
 <template>
   <main class="page home">
-    <h1>CinemaApp</h1>
-    <p>Sistema de cinema com área de cliente e administração.</p>
+    <div class="hero">
+      <span class="logo">🎬</span>
+      <h1>CinemaApp</h1>
+      <p>
+        Compre ingressos, escolha sessões e gerencie o cinema em um só lugar.
+      </p>
 
-    <div class="actions">
-      <RouterLink to="/login">Entrar</RouterLink>
-      <RouterLink to="/register">Cadastrar</RouterLink>
+      <div class="actions">
+        <RouterLink :to="destinoPrincipal">
+          <AppButton>
+            Começar
+          </AppButton>
+        </RouterLink>
+
+        <RouterLink
+          v-if="auth.user.tipo === 'guest'"
+          to="/register"
+        >
+          <AppButton variant="secondary">
+            Criar conta
+          </AppButton>
+        </RouterLink>
+      </div>
     </div>
   </main>
 </template>
 
 <style scoped>
 .home {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 18px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.hero {
+  max-width: 620px;
+}
+
+.logo {
+  font-size: 54px;
 }
 
 h1 {
   color: var(--color-primary-light);
-  font-size: 42px;
+  font-size: 48px;
+  margin: 12px 0;
 }
 
 p {
   color: var(--color-muted-light);
+  font-size: 18px;
 }
 
-a {
-  background: var(--color-primary);
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-weight: bold;
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
 }
 </style>
