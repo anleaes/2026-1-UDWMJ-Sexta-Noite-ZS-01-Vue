@@ -80,6 +80,9 @@ onMounted(carregarGeneros)
                 {{ genero.icone }} {{ genero.nome }}
               </option>
             </select>
+            <RouterLink to="/admin/listar-generos" class="helper-link">
+            Não encontrou o gênero? Gerenciar gêneros
+            </RouterLink>
           </label>
 
           <div v-if="error" class="error-message">
@@ -115,5 +118,9 @@ select {
   border: 1px solid var(--color-border-soft);
   border-radius: 10px;
   padding: 12px;
+}
+.helper-link {
+  color: var(--color-primary-light);
+  font-size: 14px;
 }
 </style>
