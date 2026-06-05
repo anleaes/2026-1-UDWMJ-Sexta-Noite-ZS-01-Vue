@@ -43,3 +43,9 @@ export type Pedido = {
   status: string
   dataHora?: string
 }
+
+export interface Sala {
+  id: number;
+  nome: string;
+  capacidade: number;
+}

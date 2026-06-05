@@ -136,3 +136,56 @@ onMounted(carregarDados)
     </section>
   </AppLayout>
 </template>
+
+<style scoped>
+.form-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--color-muted-light);
+}
+
+.field span {
+  font-weight: bold;
+}
+
+input[type="datetime-local"],
+select {
+  background: var(--color-bg-input);
+  color: white;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 16px;
+  color-scheme: dark;
+}
+
+.checkbox-field {
+  flex-direction: row;
+  align-items: center;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.error-message {
+  margin-bottom: 20px;
+}
+</style>
