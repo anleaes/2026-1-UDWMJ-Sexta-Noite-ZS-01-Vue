@@ -1,86 +1,86 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://10.0.2.2:8000'
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 type RequestOptions = RequestInit & {
-  body?: BodyInit | null
-}
+  body?: BodyInit | null;
+};
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(options.headers || {}),
     },
     ...options,
-  })
+  });
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(text || 'Erro na requisicao')
+    const text = await response.text();
+    throw new Error(text || "Erro na requisicao");
   }
 
   if (response.status === 204) {
-    return null as T
+    return null as T;
   }
 
-  return response.json()
+  return response.json();
 }
 
 export const api = {
   get<T>(path: string) {
     return request<T>(path, {
-      method: 'GET',
-    })
+      method: "GET",
+    });
   },
 
   post<T>(path: string, data: unknown) {
     return request<T>(path, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
-    })
+    });
   },
 
   patch<T>(path: string, data: unknown) {
     return request<T>(path, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(data),
-    })
+    });
   },
 
   delete<T>(path: string) {
     return request<T>(path, {
-      method: 'DELETE',
-    })
+      method: "DELETE",
+    });
   },
 
   async login(email: string, senha: string) {
-    const body = new URLSearchParams()
-    body.append('email', email.trim())
-    body.append('senha', senha)
+    const body = new URLSearchParams();
+    body.append("email", email.trim());
+    body.append("senha", senha);
 
     const response = await fetch(`${API_URL}/usuarios/login/`, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
       },
       body,
-    })
+    });
 
-    const data = await response.json().catch(() => null)
+    const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(data?.detail || 'E-mail ou senha invalidos')
+      throw new Error(data?.detail || "E-mail ou senha invalidos");
     }
 
-    return data
+    return data;
   },
 
   async logout() {
     await fetch(`${API_URL}/usuarios/logout/`, {
-      method: 'GET',
-      credentials: 'include',
-    })
+      method: "GET",
+      credentials: "include",
+    });
   },
-}
+};
