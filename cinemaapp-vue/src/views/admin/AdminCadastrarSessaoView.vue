@@ -41,6 +41,31 @@ async function carregarDados() {
   }
 }
 
+async function salvarSessao() {
+  if (!filmeId.value || !salaId.value || !horario.value) {
+    error.value = 'Preencha todos os campos obrigatórios.'
+    return
+  }
+
+  saving.value = true
+  error.value = ''
+
+  try {
+    await api.post('/sessoes/', {
+      filme: filmeId.value,
+      sala: salaId.value,
+      horario: horario.value,
+      ativa: ativa.value
+    })
+
+    router.push('/admin') 
+  } catch {
+    error.value = 'Erro ao cadastrar a sessão. Verifique os dados.'
+  } finally {
+    saving.value = false
+  }
+}
+
 onMounted(carregarDados)
 </script>
 
@@ -57,8 +82,56 @@ onMounted(carregarDados)
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
-          
-          </AppCard>
+
+          <form @submit.prevent="salvarSessao">
+            <label class="field">
+              <span>Filme *</span>
+              <select v-model="filmeId" required>
+                <option value="" disabled>Selecione um filme</option>
+                <option v-for="filme in filmes" :key="filme.id" :value="filme.id">
+                  {{ filme.titulo }}
+                </option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Sala *</span>
+              <select v-model="salaId" required>
+                <option value="" disabled>Selecione uma sala</option>
+                <option v-for="sala in salas" :key="sala.id" :value="sala.id">
+                  {{ sala.nome }} (Capacidade: {{ sala.capacidade }})
+                </option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Data e Horário *</span>
+              <input 
+                type="datetime-local" 
+                v-model="horario" 
+                required 
+              />
+            </label>
+
+            <label class="field checkbox-field">
+              <input 
+                type="checkbox" 
+                v-model="ativa" 
+              />
+              <span>Sessão Ativa (Visível para compra)</span>
+            </label>
+
+            <div class="actions">
+              <AppButton type="submit" :disabled="saving">
+                {{ saving ? 'Salvando...' : 'Cadastrar Sessão' }}
+              </AppButton>
+              
+              <RouterLink to="/admin">
+                <AppButton variant="secondary" type="button">Cancelar</AppButton>
+              </RouterLink>
+            </div>
+          </form>
+        </AppCard>
       </div>
     </section>
   </AppLayout>
