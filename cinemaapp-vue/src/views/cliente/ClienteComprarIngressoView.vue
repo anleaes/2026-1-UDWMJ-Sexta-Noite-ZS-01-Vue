@@ -1,3 +1,10 @@
+Aqui está o seu arquivo **`ClienteComprarIngresso.vue`** completo e atualizado com todas as alterações integradas!
+
+Eu arrumei a função de carregar os dados (para ele puxar a lista de ocupados da API), arrumei as variáveis do HTML que estavam dando conflito, e adicionei o CSS da linha diagonal.
+
+Pode copiar tudo e colar por cima do seu arquivo inteiro:
+
+```vue
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -15,6 +22,7 @@ const sessaoId = Number(route.query.sessaoId)
 const filmeTitulo = String(route.query.filmeTitulo || 'Filme')
 
 const assentos = ref<Assento[]>([])
+const assentosOcupadosIds = ref<number[]>([]) 
 const assentosSelecionados = ref<number[]>([])
 const tipoIngresso = ref('Inteira')
 
@@ -29,17 +37,18 @@ const tiposIngresso = [
   'Cortesia',
 ]
 
-const assentosDisponiveis = computed(() => {
-  return assentos.value
-    .filter((assento) => assento.status === true)
-    .sort((a, b) => {
-      if (a.fila === b.fila) {
-        return a.numero - b.numero
-      }
-
-      return a.fila.localeCompare(b.fila)
-    })
+const assentosOrdenados = computed(() => {
+  return [...assentos.value].sort((a, b) => {
+    if (a.fila === b.fila) {
+      return a.numero - b.numero
+    }
+    return a.fila.localeCompare(b.fila)
+  })
 })
+
+function isIndisponivel(assento: Assento) {
+  return assento.status === false || assentosOcupadosIds.value.includes(assento.id)
+}
 
 function toggleAssento(id: number) {
   if (assentosSelecionados.value.includes(id)) {
@@ -54,9 +63,16 @@ async function carregarAssentos() {
   error.value = ''
 
   try {
-    assentos.value = await api.get<Assento[]>('/assentos/assentos/')
+    const [assentosRes, ingressosRes] = await Promise.all([
+      api.get<Assento[]>('/assentos/assentos/'),
+      api.get<{ assento: number }[]>(`/ingresso/api/?sessao=${sessaoId}`)    ])
+
+    assentos.value = assentosRes
+    
+    assentosOcupadosIds.value = ingressosRes.map(ingresso => ingresso.assento)
+
   } catch {
-    error.value = 'Não foi possível carregar os assentos.'
+    error.value = 'Não foi possível carregar o mapa de assentos.'
   } finally {
     loading.value = false
   }
@@ -132,21 +148,25 @@ onMounted(carregarAssentos)
             </select>
           </label>
 
-          <h2>Assentos disponíveis</h2>
+          <h2>Mapa de Assentos</h2>
 
           <div
-            v-if="assentosDisponiveis.length === 0"
+            v-if="assentosOrdenados.length === 0"
             class="empty"
           >
-            Nenhum assento disponível.
+            Nenhum mapa de assentos disponível para esta sala.
           </div>
 
           <div v-else class="seat-grid">
             <button
-              v-for="assento in assentosDisponiveis"
+              v-for="assento in assentosOrdenados"
               :key="assento.id"
               class="seat"
-              :class="{ selected: assentosSelecionados.includes(assento.id) }"
+              :class="{ 
+                selected: assentosSelecionados.includes(assento.id),
+                ocupado: isIndisponivel(assento)
+              }"
+              :disabled="isIndisponivel(assento)"
               @click="toggleAssento(assento.id)"
             >
               {{ assento.fila }}{{ assento.numero }}
@@ -196,6 +216,7 @@ select {
 
 h2 {
   color: var(--color-primary-light);
+  margin-bottom: 16px;
 }
 
 .seat-grid {
@@ -212,11 +233,31 @@ h2 {
   background: var(--color-button-secondary);
   color: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.seat:hover:not(:disabled) {
+  border-color: var(--color-primary-light);
 }
 
 .seat.selected {
   background: var(--color-primary);
   border-color: var(--color-primary-light);
+}
+
+/* A mágica visual do assento inativo/comprado */
+.seat.ocupado {
+  cursor: not-allowed;
+  opacity: 0.6;
+  color: var(--color-muted-light);
+  border-color: var(--color-border-soft);
+  background: linear-gradient(
+    to top right, 
+    transparent 46%, 
+    var(--color-error-status, #ff4c4c) 48%, 
+    var(--color-error-status, #ff4c4c) 52%, 
+    transparent 54%
+  ), var(--color-bg-input, #2a2a2a);
 }
 
 .selected-info {
@@ -236,5 +277,12 @@ h2 {
   display: inline-block;
   margin-top: 20px;
   color: var(--color-primary-light);
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
 }
 </style>
+
+```
