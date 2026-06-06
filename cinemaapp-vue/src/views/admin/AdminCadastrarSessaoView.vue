@@ -1,138 +1,141 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import AppLayout from '@/components/AppLayout.vue'
-import AppButton from '@/components/AppButton.vue'
-import AppCard from '@/components/AppCard.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import { api } from '@/services/api'
-import type { Sessao, Filme, Sala } from '@/types'
-import { useAuthStore } from '@/stores/auth'
+import { onMounted, ref } from "vue";
+import AppLayout from "@/components/AppLayout.vue";
+import AppButton from "@/components/AppButton.vue";
+import AppCard from "@/components/AppCard.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import { api } from "@/services/api";
+import type { Sessao, Filme, Sala } from "@/types";
+import { useAuthStore } from "@/stores/auth";
 
-const sessoes = ref<Sessao[]>([])
-const filmes = ref<Filme[]>([])
-const salas = ref<Sala[]>([])
+const sessoes = ref<Sessao[]>([]);
+const filmes = ref<Filme[]>([]);
+const salas = ref<Sala[]>([]);
 
-const idEditando = ref<number | null>(null)
-const filmeId = ref<number | ''>('')
-const salaId = ref<number | ''>('')
-const horario = ref('')
-const ativa = ref(true)
+const idEditando = ref<number | null>(null);
+const filmeId = ref<number | "">("");
+const salaId = ref<number | "">("");
+const horario = ref("");
+const ativa = ref(true);
 
-const loading = ref(false)
-const error = ref('')
+const loading = ref(false);
+const error = ref("");
 
-const auth = useAuthStore()
+const auth = useAuthStore();
 
 async function carregarDados() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = "";
 
   try {
     const [sessoesRes, filmesRes, salasRes] = await Promise.all([
-      api.get<Sessao[]>('/sessoes/'),
-      api.get<Filme[]>('/filmes/'),
-      api.get<Sala[]>('/salas/')
-    ])
-    
-    sessoes.value = sessoesRes
-    filmes.value = filmesRes
-    salas.value = salasRes
+      api.get<Sessao[]>("/sessoes/"),
+      api.get<Filme[]>("/filmes/"),
+      api.get<Sala[]>("/salas/"),
+    ]);
+
+    sessoes.value = sessoesRes;
+    filmes.value = filmesRes;
+    salas.value = salasRes;
   } catch {
-    error.value = 'Não foi possível carregar os dados das sessões.'
+    error.value = "Não foi possível carregar os dados das sessões.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function limparFormulario() {
-  idEditando.value = null
-  filmeId.value = ''
-  salaId.value = ''
-  horario.value = ''
-  ativa.value = true
-  error.value = ''
+  idEditando.value = null;
+  filmeId.value = "";
+  salaId.value = "";
+  horario.value = "";
+  ativa.value = true;
+  error.value = "";
 }
 
 function editar(sessao: Sessao) {
-  idEditando.value = sessao.id
-  filmeId.value = sessao.filme
-  salaId.value = sessao.sala
-  
-  horario.value = sessao.horario.slice(0, 16) 
-  ativa.value = sessao.ativa
+  idEditando.value = sessao.id;
+  filmeId.value = sessao.filme;
+  salaId.value = sessao.sala;
+
+  horario.value = sessao.horario.slice(0, 16);
+  ativa.value = sessao.ativa;
 
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
-  })
+    behavior: "smooth",
+  });
 }
 
 async function salvar() {
-  error.value = ''
+  error.value = "";
 
   if (!filmeId.value || !salaId.value || !horario.value) {
-    error.value = 'Preencha os campos de filme, sala e horário.'
-    return
+    error.value = "Preencha os campos de filme, sala e horário.";
+    return;
   }
-
 
   const payload = {
     filme: filmeId.value,
     sala: salaId.value,
     horario: horario.value,
     ativa: ativa.value,
-    admin:auth.user.id 
-  }
+    admin: auth.user.id,
+  };
 
   try {
     if (idEditando.value) {
-      await api.patch(`/sessoes/${idEditando.value}/`, payload)
+      await api.patch(`/sessoes/${idEditando.value}/`, payload);
     } else {
-      await api.post('/sessoes/', payload)
+      await api.post("/sessoes/", payload);
     }
 
-    limparFormulario()
-    await carregarDados()
-  } catch (err) { 
-    const axiosError = err as { response?: { data: unknown } }
-    const detalhesErro = axiosError.response?.data
-    
-    console.error('Detalhes da recusa do Django:', detalhesErro)
-    error.value = 'Não foi possível salvar a sessão. Verifique os dados.'
+    limparFormulario();
+    await carregarDados();
+  } catch (err) {
+    const axiosError = err as { response?: { data: unknown } };
+    const detalhesErro = axiosError.response?.data;
+
+    console.error("Detalhes da recusa do Django:", detalhesErro);
+    error.value = "Não foi possível salvar a sessão. Verifique os dados.";
   }
 }
 
 async function excluir(id: number) {
-  const confirmar = confirm('Deseja excluir esta sessão?')
+  const confirmar = confirm("Deseja excluir esta sessão?");
 
   if (!confirmar) {
-    return
+    return;
   }
 
   try {
-    await api.delete(`/sessoes/${id}/`)
-    await carregarDados()
+    await api.delete(`/sessoes/${id}/`);
+    await carregarDados();
   } catch {
-    alert('Não foi possível excluir a sessão.')
+    alert("Não foi possível excluir a sessão.");
   }
 }
 
 function getFilmeTitulo(id: number) {
-  return filmes.value.find(f => f.id === id)?.titulo || 'Filme não encontrado'
+  return filmes.value.find((f) => f.id === id)?.titulo || "Filme não encontrado";
 }
 
-function getSalaNome(id: number) {
-  return salas.value.find(s => s.id === id)?.nome || 'Sala não encontrada'
+function getSalaNome(valor: number | string) {
+  const sala = salas.value.find(s => String(s.id) === String(valor))
+  return sala ? sala.numero : 'não encontrada'
 }
 
 function formatarDataHora(dataISO: string) {
-  return new Date(dataISO).toLocaleString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  })
+  return new Date(dataISO).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-onMounted(carregarDados)
+onMounted(carregarDados);
 </script>
 
 <template>
@@ -142,7 +145,7 @@ onMounted(carregarDados)
       <p class="page-subtitle">Cadastre e gerencie os horários dos filmes nas salas.</p>
 
       <AppCard class="form-card">
-        <h2>{{ idEditando ? 'Editar Sessão' : 'Cadastrar Sessão' }}</h2>
+        <h2>{{ idEditando ? "Editar Sessão" : "Cadastrar Sessão" }}</h2>
 
         <form class="form" @submit.prevent="salvar">
           <label class="field">
@@ -160,25 +163,18 @@ onMounted(carregarDados)
             <select v-model="salaId" required>
               <option value="" disabled>Selecione uma sala</option>
               <option v-for="sala in salas" :key="sala.id" :value="sala.id">
-                {{ sala.nome }} (Capacidade: {{ sala.capacidade }})
+                Sala {{ sala.numero }} (Capacidade: {{ sala.capacidade }})
               </option>
             </select>
           </label>
 
           <label class="field">
             <span>Data e Horário *</span>
-            <input 
-              type="datetime-local" 
-              v-model="horario" 
-              required 
-            />
+            <input type="datetime-local" v-model="horario" required />
           </label>
 
           <label class="field checkbox-field">
-            <input 
-              type="checkbox" 
-              v-model="ativa" 
-            />
+            <input type="checkbox" v-model="ativa" />
             <span>Sessão Ativa (Visível para o cliente)</span>
           </label>
 
@@ -188,14 +184,10 @@ onMounted(carregarDados)
 
           <div class="actions">
             <AppButton type="submit">
-              {{ idEditando ? 'Salvar Alterações' : 'Cadastrar' }}
+              {{ idEditando ? "Salvar Alterações" : "Cadastrar" }}
             </AppButton>
 
-            <AppButton
-              v-if="idEditando"
-              variant="secondary"
-              @click="limparFormulario"
-            >
+            <AppButton v-if="idEditando" variant="secondary" @click="limparFormulario">
               Cancelar edição
             </AppButton>
           </div>
@@ -203,30 +195,21 @@ onMounted(carregarDados)
       </AppCard>
 
       <LoadingSpinner v-if="loading" />
-      <div v-else-if="sessoes.length === 0" class="empty">
-        Nenhuma sessão cadastrada.
-      </div>
+      <div v-else-if="sessoes.length === 0" class="empty">Nenhuma sessão cadastrada.</div>
       <div v-else class="grid">
-        <AppCard
-          v-for="sessao in sessoes"
-          :key="sessao.id"
-        >
-          <div class="status-badge" :class="{ 'inativa': !sessao.ativa }">
-            {{ sessao.ativa ? 'Ativa' : 'Inativa' }}
+        <AppCard v-for="sessao in sessoes" :key="sessao.id">
+          <div class="status-badge" :class="{ inativa: !sessao.ativa }">
+            {{ sessao.ativa ? "Ativa" : "Inativa" }}
           </div>
-          
+
           <h2>🎬 {{ getFilmeTitulo(sessao.filme) }}</h2>
           <p><strong>Sala:</strong> {{ getSalaNome(sessao.sala) }}</p>
           <p><strong>Horário:</strong> {{ formatarDataHora(sessao.horario) }}</p>
 
           <div class="actions">
-            <AppButton variant="secondary" @click="editar(sessao)">
-              Editar
-            </AppButton>
+            <AppButton variant="secondary" @click="editar(sessao)"> Editar </AppButton>
 
-            <AppButton variant="danger" @click="excluir(sessao.id)">
-              Excluir
-            </AppButton>
+            <AppButton variant="danger" @click="excluir(sessao.id)"> Excluir </AppButton>
           </div>
         </AppCard>
       </div>

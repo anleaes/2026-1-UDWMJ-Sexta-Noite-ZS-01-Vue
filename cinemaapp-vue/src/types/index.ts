@@ -47,6 +47,7 @@ export type Pedido = {
 
 export interface Sala {
   id: number;
-  nome: string;
+  numero: number;
   capacidade: number;
+  sala3D: boolean;
 }
