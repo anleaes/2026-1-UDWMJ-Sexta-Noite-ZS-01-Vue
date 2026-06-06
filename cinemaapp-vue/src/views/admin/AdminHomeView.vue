@@ -24,6 +24,11 @@ const cards = [
     path: '/admin/listar-assentos',
   },
   {
+    title: 'Cadastrar Sessão',
+    text: 'Adicionar novos horários e vincular filmes às salas.',
+    path: '/admin/cadastrar-sessao',
+  },
+  {
     title: 'Cadastrar Cliente',
     text: 'Criar usuário do tipo cliente.',
     path: '/admin/cadastrar-usuario?tipo=cliente',

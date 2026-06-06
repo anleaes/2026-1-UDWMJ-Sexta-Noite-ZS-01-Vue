@@ -1,25 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import AppButton from '@/components/AppButton.vue'
 import AppCard from '@/components/AppCard.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { api } from '@/services/api'
-import type { Filme, Sala } from '@/types'
+import type { Sessao, Filme, Sala } from '@/types'
 
-const router = useRouter()
-
+const sessoes = ref<Sessao[]>([])
 const filmes = ref<Filme[]>([])
 const salas = ref<Sala[]>([])
 
-const filmeId = ref('')
-const salaId = ref('')
+const idEditando = ref<number | null>(null)
+const filmeId = ref<number | ''>('')
+const salaId = ref<number | ''>('')
 const horario = ref('')
 const ativa = ref(true)
 
 const loading = ref(false)
-const saving = ref(false)
 const error = ref('')
 
 async function carregarDados() {
@@ -27,43 +25,100 @@ async function carregarDados() {
   error.value = ''
 
   try {
-    const [filmesRes, salasRes] = await Promise.all([
+    // Carrega sessões, filmes e salas ao mesmo tempo
+    const [sessoesRes, filmesRes, salasRes] = await Promise.all([
+      api.get<Sessao[]>('/sessoes/'),
       api.get<Filme[]>('/filmes/'),
       api.get<Sala[]>('/salas/')
     ])
     
+    sessoes.value = sessoesRes
     filmes.value = filmesRes
     salas.value = salasRes
   } catch {
-    error.value = 'Não foi possível carregar as listas de filmes e salas.'
+    error.value = 'Não foi possível carregar os dados das sessões.'
   } finally {
     loading.value = false
   }
 }
 
-async function salvarSessao() {
+function limparFormulario() {
+  idEditando.value = null
+  filmeId.value = ''
+  salaId.value = ''
+  horario.value = ''
+  ativa.value = true
+  error.value = ''
+}
+
+function editar(sessao: Sessao) {
+  idEditando.value = sessao.id
+  filmeId.value = sessao.filme
+  salaId.value = sessao.sala
+  
+  
+  horario.value = sessao.horario.slice(0, 16) 
+  
+  ativa.value = sessao.ativa
+}
+
+async function salvar() {
+  error.value = ''
+
   if (!filmeId.value || !salaId.value || !horario.value) {
-    error.value = 'Preencha todos os campos obrigatórios.'
+    error.value = 'Preencha os campos de filme, sala e horário.'
     return
   }
 
-  saving.value = true
-  error.value = ''
+  const payload = {
+    filme: filmeId.value,
+    sala: salaId.value,
+    horario: horario.value,
+    ativa: ativa.value,
+  }
 
   try {
-    await api.post('/sessoes/', {
-      filme: filmeId.value,
-      sala: salaId.value,
-      horario: horario.value,
-      ativa: ativa.value
-    })
+    if (idEditando.value) {
+      await api.patch(`/sessoes/${idEditando.value}/`, payload)
+    } else {
+      await api.post('/sessoes/', payload)
+    }
 
-    router.push('/admin') 
+    limparFormulario()
+    await carregarDados()
   } catch {
-    error.value = 'Erro ao cadastrar a sessão. Verifique os dados.'
-  } finally {
-    saving.value = false
+    error.value = 'Não foi possível salvar a sessão.'
   }
+}
+
+async function excluir(id: number) {
+  const confirmar = confirm('Deseja excluir esta sessão?')
+
+  if (!confirmar) {
+    return
+  }
+
+  try {
+    await api.delete(`/sessoes/${id}/`)
+    await carregarDados()
+  } catch {
+    alert('Não foi possível excluir a sessão.')
+  }
+}
+
+function getFilmeTitulo(id: number) {
+  return filmes.value.find(f => f.id === id)?.titulo || 'Filme não encontrado'
+}
+
+function getSalaNome(id: number) {
+  return salas.value.find(s => s.id === id)?.nome || 'Sala não encontrada'
+}
+
+function formatarDataHora(dataISO: string) {
+  return new Date(dataISO).toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
 }
 
 onMounted(carregarDados)
@@ -72,65 +127,96 @@ onMounted(carregarDados)
 <template>
   <AppLayout>
     <section class="page">
-      <h1 class="page-title">Cadastrar Sessão</h1>
-      <p class="page-subtitle">Adicione uma nova sessão ao cinema.</p>
+      <h1 class="page-title">Sessões</h1>
+      <p class="page-subtitle">Cadastre e gerencie os horários dos filmes nas salas.</p>
 
-      <LoadingSpinner v-if="loading" />
+      <AppCard class="form-card">
+        <h2>{{ idEditando ? 'Editar Sessão' : 'Cadastrar Sessão' }}</h2>
 
-      <div v-else>
-        <AppCard class="form-card">
+        <form class="form" @submit.prevent="salvar">
+          <label class="field">
+            <span>Filme *</span>
+            <select v-model="filmeId" required>
+              <option value="" disabled>Selecione um filme</option>
+              <option v-for="filme in filmes" :key="filme.id" :value="filme.id">
+                {{ filme.titulo }}
+              </option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Sala *</span>
+            <select v-model="salaId" required>
+              <option value="" disabled>Selecione uma sala</option>
+              <option v-for="sala in salas" :key="sala.id" :value="sala.id">
+                {{ sala.nome }} (Capacidade: {{ sala.capacidade }})
+              </option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Data e Horário *</span>
+            <input 
+              type="datetime-local" 
+              v-model="horario" 
+              required 
+            />
+          </label>
+
+          <label class="field checkbox-field">
+            <input 
+              type="checkbox" 
+              v-model="ativa" 
+            />
+            <span>Sessão Ativa (Visível para o cliente)</span>
+          </label>
+
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
 
-          <form @submit.prevent="salvarSessao">
-            <label class="field">
-              <span>Filme *</span>
-              <select v-model="filmeId" required>
-                <option value="" disabled>Selecione um filme</option>
-                <option v-for="filme in filmes" :key="filme.id" :value="filme.id">
-                  {{ filme.titulo }}
-                </option>
-              </select>
-            </label>
+          <div class="actions">
+            <AppButton type="submit">
+              {{ idEditando ? 'Salvar Alterações' : 'Cadastrar' }}
+            </AppButton>
 
-            <label class="field">
-              <span>Sala *</span>
-              <select v-model="salaId" required>
-                <option value="" disabled>Selecione uma sala</option>
-                <option v-for="sala in salas" :key="sala.id" :value="sala.id">
-                  {{ sala.nome }} (Capacidade: {{ sala.capacidade }})
-                </option>
-              </select>
-            </label>
+            <AppButton
+              v-if="idEditando"
+              variant="secondary"
+              @click="limparFormulario"
+            >
+              Cancelar edição
+            </AppButton>
+          </div>
+        </form>
+      </AppCard>
 
-            <label class="field">
-              <span>Data e Horário *</span>
-              <input 
-                type="datetime-local" 
-                v-model="horario" 
-                required 
-              />
-            </label>
+      <LoadingSpinner v-if="loading" />
+      <div v-else-if="sessoes.length === 0" class="empty">
+        Nenhuma sessão cadastrada.
+      </div>
+      <div v-else class="grid">
+        <AppCard
+          v-for="sessao in sessoes"
+          :key="sessao.id"
+        >
+          <div class="status-badge" :class="{ 'inativa': !sessao.ativa }">
+            {{ sessao.ativa ? 'Ativa' : 'Inativa' }}
+          </div>
+          
+          <h2>🎬 {{ getFilmeTitulo(sessao.filme) }}</h2>
+          <p><strong>Sala:</strong> {{ getSalaNome(sessao.sala) }}</p>
+          <p><strong>Horário:</strong> {{ formatarDataHora(sessao.horario) }}</p>
 
-            <label class="field checkbox-field">
-              <input 
-                type="checkbox" 
-                v-model="ativa" 
-              />
-              <span>Sessão Ativa (Visível para compra)</span>
-            </label>
+          <div class="actions">
+            <AppButton variant="secondary" @click="editar(sessao)">
+              Editar
+            </AppButton>
 
-            <div class="actions">
-              <AppButton type="submit" :disabled="saving">
-                {{ saving ? 'Salvando...' : 'Cadastrar Sessão' }}
-              </AppButton>
-              
-              <RouterLink to="/admin">
-                <AppButton variant="secondary" type="button">Cancelar</AppButton>
-              </RouterLink>
-            </div>
-          </form>
+            <AppButton variant="danger" @click="excluir(sessao.id)">
+              Excluir
+            </AppButton>
+          </div>
         </AppCard>
       </div>
     </section>
@@ -139,8 +225,17 @@ onMounted(carregarDados)
 
 <style scoped>
 .form-card {
-  max-width: 600px;
-  margin: 0 auto;
+  margin-bottom: 24px;
+}
+
+h2 {
+  color: var(--color-primary-light);
+  margin-top: 0;
+}
+
+p {
+  color: var(--color-muted-light);
+  margin: 4px 0;
 }
 
 .field {
@@ -179,13 +274,26 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-.actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 30px;
+.empty {
+  color: var(--color-muted-light);
+  border: 1px dashed var(--color-border-soft);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
 }
 
-.error-message {
-  margin-bottom: 20px;
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #2d6a2d;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.status-badge.inativa {
+  background-color: #6a2d2d;
 }
 </style>
