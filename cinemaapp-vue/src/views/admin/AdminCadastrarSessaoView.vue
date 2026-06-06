@@ -6,6 +6,7 @@ import AppCard from '@/components/AppCard.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { api } from '@/services/api'
 import type { Sessao, Filme, Sala } from '@/types'
+import { useAuthStore } from '@/stores/auth'
 
 const sessoes = ref<Sessao[]>([])
 const filmes = ref<Filme[]>([])
@@ -20,12 +21,13 @@ const ativa = ref(true)
 const loading = ref(false)
 const error = ref('')
 
+const auth = useAuthStore()
+
 async function carregarDados() {
   loading.value = true
   error.value = ''
 
   try {
-    // Carrega sessões, filmes e salas ao mesmo tempo
     const [sessoesRes, filmesRes, salasRes] = await Promise.all([
       api.get<Sessao[]>('/sessoes/'),
       api.get<Filme[]>('/filmes/'),
@@ -73,11 +75,13 @@ async function salvar() {
     return
   }
 
+
   const payload = {
     filme: filmeId.value,
     sala: salaId.value,
     horario: horario.value,
     ativa: ativa.value,
+    admin:auth.user.id 
   }
 
   try {
@@ -89,8 +93,12 @@ async function salvar() {
 
     limparFormulario()
     await carregarDados()
-  } catch {
-    error.value = 'Não foi possível salvar a sessão.'
+  } catch (err) { 
+    const axiosError = err as { response?: { data: unknown } }
+    const detalhesErro = axiosError.response?.data
+    
+    console.error('Detalhes da recusa do Django:', detalhesErro)
+    error.value = 'Não foi possível salvar a sessão. Verifique os dados.'
   }
 }
 

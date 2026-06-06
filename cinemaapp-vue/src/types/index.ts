@@ -1,10 +1,11 @@
 export type UserTipo = 'cliente' | 'administrador' | 'guest'
 
-export type AuthUser = {
-  tipo: UserTipo
-  nome?: string
-  email?: string
-  token?: string
+export interface AuthUser {
+  id?: number;
+  tipo: UserTipo;
+  nome?: string;
+  email?: string;
+  token?: string;
 }
 
 export type Filme = {
