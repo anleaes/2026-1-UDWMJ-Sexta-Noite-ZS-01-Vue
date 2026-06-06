@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { api } from '@/services/api'
 import type { AuthUser, UserTipo } from '@/types'
 
+type AuthUserWithId = AuthUser & { id?: number }
+
 const STORAGE_KEY = 'cinemaapp_user'
 
 type LoginResponse = {
@@ -11,6 +13,7 @@ type LoginResponse = {
   tipo?: string
   usuario_tipo?: string
   usuario?: {
+    id?: number // <-- 1. Ensinamos ao TypeScript que a resposta traz um ID
     tipo?: string
     nome?: string
     email?: string
@@ -49,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    setUser(user: AuthUser) {
+    setUser(user: AuthUserWithId) {
       this.user = user
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
     },
@@ -65,6 +68,7 @@ export const useAuthStore = defineStore('auth', {
       const tipo = normalizeTipo(userData.tipo ?? data.usuario_tipo ?? data.tipo)
 
       this.setUser({
+        id: userData.id, 
         tipo,
         nome: userData.nome,
         email: userData.email ?? email.trim(),
