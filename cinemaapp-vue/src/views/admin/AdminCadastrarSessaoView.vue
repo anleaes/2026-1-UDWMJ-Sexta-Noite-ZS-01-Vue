@@ -56,10 +56,13 @@ function editar(sessao: Sessao) {
   filmeId.value = sessao.filme
   salaId.value = sessao.sala
   
-  
   horario.value = sessao.horario.slice(0, 16) 
-  
   ativa.value = sessao.ativa
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
 }
 
 async function salvar() {
