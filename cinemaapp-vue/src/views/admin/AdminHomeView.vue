@@ -24,6 +24,11 @@ const cards = [
     path: '/admin/listar-assentos',
   },
   {
+    title: 'Cadastrar Sala',
+    text: 'Criar e gerenciar salas do cinema.',
+    path: '/admin/cadastrar-sala',
+  },
+  {
     title: 'Cadastrar Sessão',
     text: 'Adicionar novos horários e vincular filmes às salas.',
     path: '/admin/cadastrar-sessao',
