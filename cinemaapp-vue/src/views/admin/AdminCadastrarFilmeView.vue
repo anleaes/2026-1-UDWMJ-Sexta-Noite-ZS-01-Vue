@@ -18,6 +18,7 @@ const classificacao = ref('')
 const generos = ref<Genero[]>([])
 const loading = ref(false)
 const error = ref('')
+const cartaz = ref('')
 
 async function carregarGeneros() {
   try {
@@ -38,12 +39,13 @@ async function cadastrarFilme() {
   loading.value = true
 
   try {
-    await api.post('/filmes/', {
-      titulo: titulo.value,
-      genero: Number(generoId.value),
-      duracao: Number(duracao.value),
-      classificacao: classificacao.value,
-    })
+  await api.post('/filmes/', {
+    titulo: titulo.value,
+    genero: Number(generoId.value),
+    duracao: Number(duracao.value),
+    classificacao: classificacao.value,
+    cartaz: cartaz.value.trim() || null,
+  })
 
     router.push('/admin/listar-filmes')
   } catch {
@@ -67,6 +69,7 @@ onMounted(carregarGeneros)
           <AppInput v-model="titulo" label="Título" />
           <AppInput v-model="duracao" label="Duração em minutos" type="number" />
           <AppInput v-model="classificacao" label="Classificação" />
+          <AppInput v-model="cartaz" label="URL do cartaz" />
 
           <label class="field">
             <span>Gênero</span>
