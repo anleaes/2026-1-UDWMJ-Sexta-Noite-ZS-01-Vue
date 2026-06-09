@@ -4,23 +4,57 @@ type RequestOptions = RequestInit & {
   body?: BodyInit | null;
 };
 
+function getCookie(name: string) {
+  const cookies = document.cookie.split("; ");
+  const cookie = cookies.find((item) => item.startsWith(`${name}=`));
+
+  return cookie ? decodeURIComponent(cookie.split("=")[1] || "") : "";
+}
+
+async function getErrorMessage(response: Response) {
+  const text = await response.text();
+
+  if (response.status === 403 && text.includes("CSRF")) {
+    return "Verificação CSRF falhou. Adicione http://localhost:5173 em CSRF_TRUSTED_ORIGINS no Django.";
+  }
+
+  if (text.includes("<!DOCTYPE html") || text.includes("<html")) {
+    return `Erro ${response.status}: o servidor retornou HTML em vez de JSON.`;
+  }
+
+  return text || "Erro na requisicao";
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const csrfToken = getCookie("csrftoken");
+
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
+      ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
       ...(options.headers || {}),
     },
     ...options,
   });
 
+  if (response.redirected && response.url.includes("/usuarios/login")) {
+    throw new Error("Sessao expirada. Faca login novamente.");
+  }
+
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || "Erro na requisicao");
+    throw new Error(await getErrorMessage(response));
   }
 
   if (response.status === 204) {
     return null as T;
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    throw new Error("O servidor nao retornou JSON para esta rota.");
   }
 
   return response.json();
