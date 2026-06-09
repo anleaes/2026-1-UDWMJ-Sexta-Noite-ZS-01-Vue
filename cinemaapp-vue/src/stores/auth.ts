@@ -13,7 +13,7 @@ type LoginResponse = {
   tipo?: string
   usuario_tipo?: string
   usuario?: {
-    id?: number // <-- 1. Ensinamos ao TypeScript que a resposta traz um ID
+    id?: number 
     tipo?: string
     nome?: string
     email?: string
