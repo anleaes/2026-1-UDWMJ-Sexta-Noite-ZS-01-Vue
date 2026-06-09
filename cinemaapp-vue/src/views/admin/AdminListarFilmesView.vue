@@ -97,7 +97,12 @@ onMounted(carregarFilmes)
             <p>Classificação: {{ filme.classificacao }}</p>
             <p>Duração: {{ filme.duracao }} min</p>
             <p>Gênero ID: {{ filme.genero }}</p>
-
+            <img
+              v-if="filme.cartaz"
+              :src="filme.cartaz"
+              :alt="`Cartaz de ${filme.titulo}`"
+              class="poster"
+            />
             <div class="actions">
             <RouterLink
                 :to="{
@@ -161,5 +166,14 @@ p {
   border-radius: 10px;
   padding: 20px;
   text-align: center;
+}
+
+.poster {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-border-soft);
 }
 </style>
