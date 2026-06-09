@@ -7,12 +7,13 @@ import AppButton from '@/components/AppButton.vue'
 import AppCard from '@/components/AppCard.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { api } from '@/services/api'
-import type { Assento, Pedido } from '@/types'
+import type { Assento, Pedido, Sessao } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 
 const sessaoId = Number(route.query.sessaoId)
+const salaId = ref(Number(route.query.salaId) || 0)
 const filmeTitulo = String(route.query.filmeTitulo || 'Filme')
 
 const assentos = ref<Assento[]>([])
@@ -57,11 +58,16 @@ async function carregarAssentos() {
   error.value = ''
 
   try {
+    if (!salaId.value) {
+      const sessoes = await api.get<Sessao[]>('/sessoes/')
+      salaId.value = sessoes.find((sessao) => sessao.id === sessaoId)?.sala || 0
+    }
+
     const [assentosRes, ingressosRes] = await Promise.all([
       api.get<Assento[]>('/assentos/assentos/'),
       api.get<{ assento: number }[]>(`/ingresso/api/?sessao=${sessaoId}`)    ])
 
-    assentos.value = assentosRes
+    assentos.value = assentosRes.filter((assento) => assento.id_sala === salaId.value)
     
     assentosOcupadosIds.value = ingressosRes.map(ingresso => ingresso.assento)
 

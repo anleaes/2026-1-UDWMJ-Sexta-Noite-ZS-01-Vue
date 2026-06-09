@@ -16,6 +16,7 @@ const menuItems = computed(() => {
     { label: 'Gêneros', path: '/admin/listar-generos', role: 'administrador' },
     { label: 'Assentos', path: '/admin/listar-assentos', role: 'administrador' },
     { label: 'Cadastrar Sala', path: '/admin/cadastrar-sala', role: 'administrador' },
+    { label: 'Cadastrar Sessão', path: '/admin/cadastrar-sessao', role: 'administrador' },
     { label: 'Cadastrar Cliente', path: '/admin/cadastrar-usuario?tipo=cliente', role: 'administrador' },
     { label: 'Cadastrar Administrador', path: '/admin/cadastrar-usuario?tipo=administrador', role: 'administrador' },
   ]
