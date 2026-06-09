@@ -14,6 +14,7 @@ export type Filme = {
   genero: number
   duracao: number
   classificacao: string
+  cartaz?: string | null
 }
 
 export type Genero = {
