@@ -62,6 +62,18 @@ const router = createRouter({
       meta: { requiresAuth: true, role: "administrador" },
     },
     {
+      path: "/admin/listar-salas",
+      name: "admin-salas",
+      component: () => import("@/views/admin/AdminSalasView.vue"),
+      meta: { requiresAuth: true, role: "administrador" },
+    },
+    {
+      path: "/admin/cadastrar-sala",
+      name: "admin-cadastrar-sala",
+      component: () => import("@/views/admin/AdminSalasView.vue"),
+      meta: { requiresAuth: true, role: "administrador" },
+    },
+    {
       path: '/admin/cadastrar-usuario',
       name: 'admin-cadastrar-usuario',
       component: () => import('@/views/admin/AdminCadastrarUsuarioView.vue'),
