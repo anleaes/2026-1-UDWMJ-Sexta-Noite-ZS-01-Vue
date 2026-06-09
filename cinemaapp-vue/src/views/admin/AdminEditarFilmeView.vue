@@ -20,6 +20,7 @@ const generoId = ref(String(route.query.genero || ''))
 const generos = ref<Genero[]>([])
 const loading = ref(false)
 const error = ref('')
+const cartaz = ref(String(route.query.cartaz || ''))
 
 async function carregarGeneros() {
   try {
@@ -48,6 +49,7 @@ async function salvar() {
       duracao: Number(duracao.value),
       classificacao: classificacao.value,
       genero: generoId.value ? Number(generoId.value) : null,
+      cartaz: cartaz.value.trim() || null,
     })
 
     router.push('/admin/listar-filmes')
@@ -72,6 +74,7 @@ onMounted(carregarGeneros)
           <AppInput v-model="titulo" label="Título" />
           <AppInput v-model="duracao" label="Duração em minutos" type="number" />
           <AppInput v-model="classificacao" label="Classificação" />
+          <AppInput v-model="cartaz" label="URL do cartaz" />
 
           <label class="field">
             <span>Gênero</span>

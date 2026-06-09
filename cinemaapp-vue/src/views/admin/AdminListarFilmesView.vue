@@ -113,6 +113,8 @@ onMounted(carregarFilmes)
                     duracao: filme.duracao,
                     classificacao: filme.classificacao,
                     genero: filme.genero,
+                    cartaz: filme.cartaz,
+
                 },
                 }"
             >
