@@ -1,10 +1,4 @@
-Aqui está o seu arquivo **`ClienteComprarIngresso.vue`** completo e atualizado com todas as alterações integradas!
 
-Eu arrumei a função de carregar os dados (para ele puxar a lista de ocupados da API), arrumei as variáveis do HTML que estavam dando conflito, e adicionei o CSS da linha diagonal.
-
-Pode copiar tudo e colar por cima do seu arquivo inteiro:
-
-```vue
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -245,7 +239,6 @@ h2 {
   border-color: var(--color-primary-light);
 }
 
-/* A mágica visual do assento inativo/comprado */
 .seat.ocupado {
   cursor: not-allowed;
   opacity: 0.6;
@@ -284,5 +277,3 @@ h2 {
   text-decoration: underline;
 }
 </style>
-
-```
