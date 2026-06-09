@@ -84,6 +84,7 @@ onMounted(carregarSessoes)
               query: {
                 sessaoId: sessao.id,
                 filmeTitulo,
+                salaId: sessao.sala,
               },
             }"
           >
