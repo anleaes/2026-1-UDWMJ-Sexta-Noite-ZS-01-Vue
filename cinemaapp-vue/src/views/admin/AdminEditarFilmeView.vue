@@ -20,7 +20,13 @@ const generoId = ref(String(route.query.genero || ''))
 const generos = ref<Genero[]>([])
 const loading = ref(false)
 const error = ref('')
-const cartaz = ref(String(route.query.cartaz || ''))
+const cartazAtual = ref(String(route.query.cartaz || ''))
+const cartaz = ref<File | null>(null)
+
+function selecionarCartaz(event: Event) {
+  const input = event.target as HTMLInputElement
+  cartaz.value = input.files?.[0] || null
+}
 
 async function carregarGeneros() {
   try {
@@ -44,13 +50,20 @@ async function salvar() {
   loading.value = true
 
   try {
-    await api.patch(`/filmes/${id}/`, {
-      titulo: titulo.value,
-      duracao: Number(duracao.value),
-      classificacao: classificacao.value,
-      genero: generoId.value ? Number(generoId.value) : null,
-      cartaz: cartaz.value.trim() || null,
-    })
+    const formData = new FormData()
+    formData.append('titulo', titulo.value)
+    formData.append('duracao', String(Number(duracao.value)))
+    formData.append('classificacao', classificacao.value)
+
+    if (generoId.value) {
+      formData.append('genero', String(Number(generoId.value)))
+    }
+
+    if (cartaz.value) {
+      formData.append('cartaz', cartaz.value)
+    }
+
+    await api.patchForm(`/filmes/${id}/`, formData)
 
     router.push('/admin/listar-filmes')
   } catch {
@@ -74,7 +87,16 @@ onMounted(carregarGeneros)
           <AppInput v-model="titulo" label="Título" />
           <AppInput v-model="duracao" label="Duração em minutos" type="number" />
           <AppInput v-model="classificacao" label="Classificação" />
-          <AppInput v-model="cartaz" label="URL do cartaz" />
+          <label class="field">
+            <span>Cartaz</span>
+            <img
+              v-if="cartazAtual"
+              :src="cartazAtual"
+              alt="Cartaz atual"
+              class="poster-preview"
+            />
+            <input type="file" accept="image/*" @change="selecionarCartaz" />
+          </label>
 
           <label class="field">
             <span>Gênero</span>
@@ -123,5 +145,21 @@ select {
   border: 1px solid var(--color-border-soft);
   border-radius: 10px;
   padding: 12px;
+}
+
+input[type='file'] {
+  background: var(--color-bg-input);
+  color: white;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.poster-preview {
+  width: 140px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-soft);
 }
 </style>
