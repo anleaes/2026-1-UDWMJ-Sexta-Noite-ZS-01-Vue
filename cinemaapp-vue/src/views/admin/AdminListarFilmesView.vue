@@ -102,10 +102,11 @@ onMounted(carregarFilmes)
         Nenhum filme encontrado.
         </div>
 
-        <div v-else class="grid">
+        <div v-else class="movies-grid">
         <AppCard
             v-for="filme in filmesFiltrados"
             :key="filme.id"
+            class="movie-card"
         >
             <h2>{{ filme.titulo }}</h2>
             <p>Classificação: {{ filme.classificacao }}</p>
@@ -184,14 +185,33 @@ p {
   text-align: center;
 }
 
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 280px));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.movie-card .actions {
+  margin-top: auto;
+}
+
 .poster {
-  width: min(100%, 220px);
+  width: 100%;
+  max-width: 180px;
   aspect-ratio: 2 / 3;
   object-fit: contain;
   background: var(--color-bg-input);
   display: block;
+  align-self: center;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin: 12px 0 16px;
   border: 1px solid var(--color-border-soft);
 }
 </style>
