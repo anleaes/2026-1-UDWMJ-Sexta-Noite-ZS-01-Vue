@@ -18,7 +18,12 @@ const classificacao = ref('')
 const generos = ref<Genero[]>([])
 const loading = ref(false)
 const error = ref('')
-const cartaz = ref('')
+const cartaz = ref<File | null>(null)
+
+function selecionarCartaz(event: Event) {
+  const input = event.target as HTMLInputElement
+  cartaz.value = input.files?.[0] || null
+}
 
 async function carregarGeneros() {
   try {
@@ -39,13 +44,17 @@ async function cadastrarFilme() {
   loading.value = true
 
   try {
-  await api.post('/filmes/', {
-    titulo: titulo.value,
-    genero: Number(generoId.value),
-    duracao: Number(duracao.value),
-    classificacao: classificacao.value,
-    cartaz: cartaz.value.trim() || null,
-  })
+    const formData = new FormData()
+    formData.append('titulo', titulo.value)
+    formData.append('genero', String(Number(generoId.value)))
+    formData.append('duracao', String(Number(duracao.value)))
+    formData.append('classificacao', classificacao.value)
+
+    if (cartaz.value) {
+      formData.append('cartaz', cartaz.value)
+    }
+
+    await api.postForm('/filmes/', formData)
 
     router.push('/admin/listar-filmes')
   } catch {
@@ -69,7 +78,10 @@ onMounted(carregarGeneros)
           <AppInput v-model="titulo" label="Título" />
           <AppInput v-model="duracao" label="Duração em minutos" type="number" />
           <AppInput v-model="classificacao" label="Classificação" />
-          <AppInput v-model="cartaz" label="URL do cartaz" />
+          <label class="field">
+            <span>Cartaz</span>
+            <input type="file" accept="image/*" @change="selecionarCartaz" />
+          </label>
 
           <label class="field">
             <span>Gênero</span>
@@ -122,6 +134,15 @@ select {
   border-radius: 10px;
   padding: 12px;
 }
+
+input[type='file'] {
+  background: var(--color-bg-input);
+  color: white;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 10px;
+  padding: 12px;
+}
+
 .helper-link {
   color: var(--color-primary-light);
   font-size: 14px;
