@@ -28,8 +28,8 @@ function selecionarCartaz(event: Event) {
 async function carregarGeneros() {
   try {
     generos.value = await api.get<Genero[]>('/generos/')
-  } catch {
-    error.value = 'Não foi possível carregar os gêneros.'
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Não foi possível carregar os gêneros.'
   }
 }
 
@@ -57,8 +57,8 @@ async function cadastrarFilme() {
     await api.postForm('/filmes/', formData)
 
     router.push('/admin/listar-filmes')
-  } catch {
-    error.value = 'Não foi possível cadastrar o filme.'
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Não foi possível cadastrar o filme.'
   } finally {
     loading.value = false
   }

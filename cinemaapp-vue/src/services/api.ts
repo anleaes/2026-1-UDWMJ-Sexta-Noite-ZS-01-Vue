@@ -27,12 +27,13 @@ async function getErrorMessage(response: Response) {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const csrfToken = getCookie("csrftoken");
+  const isFormData = options.body instanceof FormData;
 
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
       ...(options.headers || {}),
     },
@@ -74,10 +75,24 @@ export const api = {
     });
   },
 
+  postForm<T>(path: string, data: FormData) {
+    return request<T>(path, {
+      method: "POST",
+      body: data,
+    });
+  },
+
   patch<T>(path: string, data: unknown) {
     return request<T>(path, {
       method: "PATCH",
       body: JSON.stringify(data),
+    });
+  },
+
+  patchForm<T>(path: string, data: FormData) {
+    return request<T>(path, {
+      method: "PATCH",
+      body: data,
     });
   },
 
