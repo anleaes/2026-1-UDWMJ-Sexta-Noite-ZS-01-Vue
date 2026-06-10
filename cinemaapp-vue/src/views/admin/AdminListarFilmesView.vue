@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { api } from '@/services/api'
 import type { Filme } from '@/types'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
 const filmes = ref<Filme[]>([])
 const busca = ref('')
 const loading = ref(false)
@@ -55,6 +57,18 @@ async function excluirFilme(id: number) {
   }
 }
 
+function getCartazUrl(cartaz?: string | null) {
+  if (!cartaz) {
+    return ''
+  }
+
+  if (cartaz.startsWith('http')) {
+    return cartaz
+  }
+
+  return `${API_URL}${cartaz}`
+}
+
 onMounted(carregarFilmes)
 </script>
 
@@ -99,7 +113,7 @@ onMounted(carregarFilmes)
             <p>Gênero ID: {{ filme.genero }}</p>
             <img
               v-if="filme.cartaz"
-              :src="filme.cartaz"
+              :src="getCartazUrl(filme.cartaz)"
               :alt="`Cartaz de ${filme.titulo}`"
               class="poster"
             />
@@ -171,9 +185,11 @@ p {
 }
 
 .poster {
-  width: 100%;
-  max-height: 260px;
-  object-fit: cover;
+  width: min(100%, 220px);
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  background: var(--color-bg-input);
+  display: block;
   border-radius: 8px;
   margin-bottom: 12px;
   border: 1px solid var(--color-border-soft);

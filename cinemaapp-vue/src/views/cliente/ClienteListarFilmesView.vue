@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { api } from '@/services/api'
 import type { Filme } from '@/types'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
 const filmes = ref<Filme[]>([])
 const busca = ref('')
 const loading = ref(false)
@@ -40,6 +42,18 @@ async function carregarFilmes() {
   }
 }
 
+function getCartazUrl(cartaz?: string | null) {
+  if (!cartaz) {
+    return ''
+  }
+
+  if (cartaz.startsWith('http')) {
+    return cartaz
+  }
+
+  return `${API_URL}${cartaz}`
+}
+
 onMounted(carregarFilmes)
 </script>
 
@@ -70,6 +84,13 @@ onMounted(carregarFilmes)
           v-for="filme in filmesFiltrados"
           :key="filme.id"
         >
+          <img
+            v-if="filme.cartaz"
+            :src="getCartazUrl(filme.cartaz)"
+            :alt="`Cartaz de ${filme.titulo}`"
+            class="poster"
+          />
+
           <h2>{{ filme.titulo }}</h2>
           <p>Classificação: {{ filme.classificacao }}</p>
           <p>Duração: {{ filme.duracao }} min</p>
@@ -117,5 +138,16 @@ p {
   border-radius: 10px;
   padding: 20px;
   text-align: center;
+}
+
+.poster {
+  width: min(100%, 220px);
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  background: var(--color-bg-input);
+  display: block;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-border-soft);
 }
 </style>

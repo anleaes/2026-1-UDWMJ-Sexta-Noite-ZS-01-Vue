@@ -8,6 +8,8 @@ import AppInput from '@/components/AppInput.vue'
 import { api } from '@/services/api'
 import type { Genero } from '@/types'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
 const route = useRoute()
 const router = useRouter()
 
@@ -26,6 +28,18 @@ const cartaz = ref<File | null>(null)
 function selecionarCartaz(event: Event) {
   const input = event.target as HTMLInputElement
   cartaz.value = input.files?.[0] || null
+}
+
+function getCartazUrl(cartaz?: string | null) {
+  if (!cartaz) {
+    return ''
+  }
+
+  if (cartaz.startsWith('http')) {
+    return cartaz
+  }
+
+  return `${API_URL}${cartaz}`
 }
 
 async function carregarGeneros() {
@@ -91,7 +105,7 @@ onMounted(carregarGeneros)
             <span>Cartaz</span>
             <img
               v-if="cartazAtual"
-              :src="cartazAtual"
+              :src="getCartazUrl(cartazAtual)"
               alt="Cartaz atual"
               class="poster-preview"
             />
@@ -157,8 +171,9 @@ input[type='file'] {
 
 .poster-preview {
   width: 140px;
-  max-height: 200px;
-  object-fit: cover;
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  background: var(--color-bg-input);
   border-radius: 8px;
   border: 1px solid var(--color-border-soft);
 }
